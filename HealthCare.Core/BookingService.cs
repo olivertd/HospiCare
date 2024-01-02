@@ -13,7 +13,7 @@ namespace HealthCare.Core
                 Id = 1,
                 AppointmentStart = DateTime.Now.AddHours(2),
                 AppointmentEnd = DateTime.Now.AddHours(2),
-                PatientId = 1,
+                ApplicationUserId = "1",
                 PatientText = "General Checkup"
             });
             bookings.Add(new Appointment
@@ -21,7 +21,7 @@ namespace HealthCare.Core
                 Id = 2,
                 AppointmentStart = DateTime.Now.AddHours(2),
                 AppointmentEnd = DateTime.Now.AddHours(2),
-                PatientId = 2,
+                ApplicationUserId = "2",
                 PatientText = "General Checkup"
             });
 

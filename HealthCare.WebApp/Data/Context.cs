@@ -1,14 +1,12 @@
 ﻿using HealthCare.Core.Models;
 using HealthCare.Core.Models.Users;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthCare.Core.Data
 {
-    public class Context : DbContext
+    public class Context : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<Patient> Patients { get; set; }
-        public DbSet<Worker> Workers { get; set; }
-
         public DbSet<Appointment> Appointments { get; set; }
 
         public Context(DbContextOptions<Context> options)
@@ -18,6 +16,13 @@ namespace HealthCare.Core.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(c => c.ApplicationUser)
+                .WithMany(a => a.Appointments)
+                .HasForeignKey(c => c.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

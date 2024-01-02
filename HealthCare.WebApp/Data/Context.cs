@@ -1,4 +1,5 @@
-﻿using HealthCare.Core.Models.Users;
+﻿using HealthCare.Core.Models;
+using HealthCare.Core.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthCare.Core.Data
@@ -7,6 +8,8 @@ namespace HealthCare.Core.Data
     {
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Worker> Workers { get; set; }
+
+        public DbSet<Appointment> Appointments { get; set; }
 
         public Context(DbContextOptions<Context> options)
         : base(options)

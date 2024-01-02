@@ -19,11 +19,11 @@
 
     private void BookAppointment()
     {
-        var newBooking = new Booking
+        var newBooking = new Appointment
         {
-            Time = selectedTime,
-            PatientName = patientName,
-            Service = selectedService
+            AppointmentStart = selectedTime,
+            AppointmentEnd = selectedTime.AddMinutes(60),
+            PatientText = patientName,
         };
 
         BookingService.AddBooking(newBooking);

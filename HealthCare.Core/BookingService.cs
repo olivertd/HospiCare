@@ -1,25 +1,38 @@
-﻿using System;
-using HealthCare.Core.Models;
+﻿using HealthCare.Core.Models;
 namespace HealthCare.Core
 {
     public class BookingService
     {
-        private List<Booking> bookings = new List<Booking>();
+        private List<Appointment> bookings = new List<Appointment>();
 
         public BookingService()
         {
             // mock data
-            bookings.Add(new Booking { Id = 1, Time = DateTime.Now.AddHours(2), PatientName = "John Doe", Service = "General Checkup" });
-            bookings.Add(new Booking { Id = 2, Time = DateTime.Now.AddHours(4), PatientName = "Jane Smith", Service = "Vaccination" });
-         
+            bookings.Add(new Appointment
+            {
+                Id = 1,
+                AppointmentStart = DateTime.Now.AddHours(2),
+                AppointmentEnd = DateTime.Now.AddHours(2),
+                PatientId = 1,
+                PatientText = "General Checkup"
+            });
+            bookings.Add(new Appointment
+            {
+                Id = 2,
+                AppointmentStart = DateTime.Now.AddHours(2),
+                AppointmentEnd = DateTime.Now.AddHours(2),
+                PatientId = 2,
+                PatientText = "General Checkup"
+            });
+
         }
 
-        public IEnumerable<Booking> GetBookings()
+        public IEnumerable<Appointment> GetBookings()
         {
             return bookings;
         }
 
-        public void AddBooking(Booking booking)
+        public void AddBooking(Appointment booking)
         {
             bookings.Add(booking);
         }

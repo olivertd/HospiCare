@@ -4,7 +4,7 @@ namespace HealthCare.Core.Models.Users
 {
     public class ApplicationUser : IdentityUser
     {
-        public UserType Type { get; set; } = UserType.Patient;
+        public UserType Type { get; set; }
 
         public List<Appointment> Appointments { get; set; }
     }

@@ -4,6 +4,18 @@
         <form method="post" action="Identity/Account/LogOut">
             <button type="submit" class="nav-link btn btn-link">Log out</button>
         </form>
+        @if (context.User.IsInRole("Doctor"))
+        {
+            <p>Signed in as: Doctor.</p>
+        }
+        else if (context.User.IsInRole("Nurse"))
+        {
+            <p>Signed in as: Nurse.</p>
+        }
+        else if (context.User.IsInRole("Patient"))
+        {
+            <p>Signed in as: Patient.</p>
+        }
     </Authorized>
     <NotAuthorized>
         <a href="Identity/Account/Register">Register</a>

@@ -1,7 +1,9 @@
 ﻿@using HealthCare.Core.Data;
 @using HealthCare.Core.Models;
 @using HealthCare.Core.Models.Users;
-@inject BookingService BookingService
+@inject BookingService BookingService;
+@inject HealthCare.Core.Data.Context database
+
 
 @if (!bookingMade)
 {
@@ -52,18 +54,12 @@
 }
 
 @code {
-    private readonly Context database;
     private DateTime selectedDay;
     private string patientName;
     private string selectedService;
     private string selectedStaff;
     private string selectedTime;
 
-    private List<Appointment> appointments = new List<Appointment>
-            {
-                new Appointment { Id = 1, AppointmentStart = DateTime.Parse("0001-01-01 10:00"), AppointmentEnd = DateTime.Parse("0001-01-01 11:00"), PatientText = "John Doe", ApplicationUserId = "someUserId" },
-                new Appointment { Id = 2, AppointmentStart = DateTime.Parse("0001-01-01 14:00"), AppointmentEnd = DateTime.Parse("0001-01-01 15:00"), PatientText = "Jane Doe", ApplicationUserId = "someOtherUserId" },
-            };
     private bool bookingMade = false;
     public List<DateTime> availableTimes;
     List<ApplicationUser> mockDoctors = ApplicationUser.GenerateMockDoctors();
@@ -71,10 +67,9 @@
 
     public BookingComponent(){}
 
-    public BookingComponent(Context database)
+    public BookingComponent(Context database, List<Appointment> appointments)
     {
         this.database = database;
-
 
     }
 
@@ -84,14 +79,23 @@
 
         var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDay.Year, selectedDay.Month, selectedDay.Day, hour, 0, 0)).ToList();
 
-        var bookedTimeSlots = appointments
-            .Select(appointment => appointment.AppointmentStart)
-            .ToList();
+        var availableTimeSlots = allTimeSlots;
 
-        var availableTimeSlots = allTimeSlots
-            .Except(bookedTimeSlots)
-            .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 18)
-            .ToList();
+
+        var bookedTimeSlots = database.Appointments
+        .Select(appointment => appointment.AppointmentStart)
+        .ToList();
+
+        availableTimeSlots = allTimeSlots
+        .Except(bookedTimeSlots)
+        .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 18)
+        .ToList();
+
+
+
+
+
+
 
         availableTimes = availableTimeSlots;
 
@@ -105,12 +109,13 @@
             {
                 AppointmentStart = DateTime.Parse(selectedTime),
                 AppointmentEnd = DateTime.Parse(selectedTime).AddHours(1),
-                PatientText = patientName,
-                ApplicationUserId = "41"
+                PatientText = "Name Nameson",
+                ApplicationUserId = "fcfd2443-82c3-49e3-b1c0-fc5883e0ba6a"
 
         };
 
-        BookingService.AddBooking(newBooking);
+        database.Appointments.Add(newBooking);
+        database.SaveChanges();
         bookingMade = true;
         var bookings = BookingService.GetBookings();
     }

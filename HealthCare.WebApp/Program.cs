@@ -2,6 +2,7 @@
 using HealthCare.Core;
 using HealthCare.Core.Data;
 using HealthCare.Core.Models.Users;
+using HealthCare.WebApp.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<AppointmentService>();
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<BookingComponent>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

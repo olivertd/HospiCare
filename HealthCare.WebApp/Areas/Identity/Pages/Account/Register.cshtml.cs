@@ -96,7 +96,7 @@ namespace HealthCare.WebApp.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
 
             [Display(Name = "Register as...")]
-            public UserType UserType { get; set; }
+            public UserRole UserType { get; set; }
         }
 
 

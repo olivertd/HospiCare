@@ -30,16 +30,16 @@
             <div class="form-check">
                 <p>Select user type</p>
                 <label>
-                    <input asp-for="Input.UserType" type="radio" value="@UserType.Patient" />
-                    @UserType.Patient
+                    <input asp-for="Input.UserType" type="radio" value="@UserRole.Patient" />
+                    @UserRole.Patient
                 </label>
                 <label>
-                    <input asp-for="Input.UserType" type="radio" value="@UserType.Doctor" />
-                    @UserType.Doctor
+                    <input asp-for="Input.UserType" type="radio" value="@UserRole.Doctor" />
+                    @UserRole.Doctor
                 </label>
                 <label>
-                    <input asp-for="Input.UserType" type="radio" value="@UserType.Nurse" />
-                    @UserType.Nurse
+                    <input asp-for="Input.UserType" type="radio" value="@UserRole.Nurse" />
+                    @UserRole.Nurse
                 </label>
             </div>
 

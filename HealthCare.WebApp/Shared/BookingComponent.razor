@@ -20,27 +20,28 @@
     <button type="submit">Show Available Appointments</button>
 </form>
 
-    @if (availableTimeSlots != null)
+    @if (availableTimes != null)
     {
         <h3>Available Appointments:</h3>
-        <ul>
-            @foreach (var timeSlot in availableTimeSlots)
-            {
-                <li>@timeSlot.Hour</li>
-            }
-        </ul>
+        <form @onsubmit="@(e => BookAppointment(selectedTime))">
+            <ul>
+                @foreach (var timeSlot in availableTimes)
+                {
+                    <li>
+                        <label>
+                            <input type="radio" name="selectedTime" value="@timeSlot.ToString("yyyy-MM-dd HH:mm:ss")" @onchange="@(e => selectedTime = e.Value.ToString())" />
+                            @timeSlot.Hour:00 - @(timeSlot.Hour + 1):00
+                        </label>
+                    </li>
+                }
+            </ul>
+
+            <button type="submit">Book Selected Time</button>
+        </form>
     }
 
 
-<h3>Book an Appointment</h3>
 
-<input type="text" placeholder="Patient Name" @bind="patientName" />
-<select @bind="selectedService">
-    <option value="General Checkup">General Checkup</option>
-    <option value="Vaccination">Vaccination</option>
-  
-</select>
-<button @onclick="BookAppointment">Book</button>
     
 }
 
@@ -56,9 +57,15 @@
     private string patientName;
     private string selectedService;
     private string selectedStaff;
-    private List<Appointment> appointments;
+    private string selectedTime;
+
+    private List<Appointment> appointments = new List<Appointment>
+            {
+                new Appointment { Id = 1, AppointmentStart = DateTime.Parse("0001-01-01 10:00"), AppointmentEnd = DateTime.Parse("0001-01-01 11:00"), PatientText = "John Doe", ApplicationUserId = "someUserId" },
+                new Appointment { Id = 2, AppointmentStart = DateTime.Parse("0001-01-01 14:00"), AppointmentEnd = DateTime.Parse("0001-01-01 15:00"), PatientText = "Jane Doe", ApplicationUserId = "someOtherUserId" },
+            };
     private bool bookingMade = false;
-    private List<DateTime> availableTimeSlots;
+    public List<DateTime> availableTimes;
     List<ApplicationUser> mockDoctors = ApplicationUser.GenerateMockDoctors();
 
 
@@ -68,46 +75,43 @@
     {
         this.database = database;
 
+
     }
 
-    private List<Appointment> GetBookedAppointments()
-    {
-        var appointments = new List<Appointment>
-            {
-                new Appointment { Id = 1, AppointmentStart = DateTime.Parse("2024-08-17 10:00"), AppointmentEnd = DateTime.Parse("2024-08-17 11:00"), PatientText = "John Doe", ApplicationUserId = "someUserId" },
-                new Appointment { Id = 2, AppointmentStart = DateTime.Parse("2024-08-17 14:30"), AppointmentEnd = DateTime.Parse("2024-08-17 15:30"), PatientText = "Jane Doe", ApplicationUserId = "someOtherUserId" },
-            };
-
-        return appointments;
-    }
-
-
-    private List<DateTime> GenerateAvailableTimeSlots()
+    private void GenerateAvailableTimeSlots()
     {
         var workingHours = Enumerable.Range(8, 10);
 
         var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDay.Year, selectedDay.Month, selectedDay.Day, hour, 0, 0)).ToList();
-        var bookedTimeSlots = appointments.Select(appointment => appointment.AppointmentStart).ToList();
-        var availableTimeSlots = allTimeSlots.Except(bookedTimeSlots).ToList();
 
+        var bookedTimeSlots = appointments
+            .Select(appointment => appointment.AppointmentStart)
+            .ToList();
 
+        var availableTimeSlots = allTimeSlots
+            .Except(bookedTimeSlots)
+            .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 18)
+            .ToList();
 
-        
-
-        return availableTimeSlots;
+        availableTimes = availableTimeSlots;
 
     }
 
 
-    private void BookAppointment()
+    private void BookAppointment(string selectedtime)
     {
+
         var newBooking = new Appointment
-        {
-            PatientText = patientName,
-            
+            {
+                AppointmentStart = DateTime.Parse(selectedTime),
+                AppointmentEnd = DateTime.Parse(selectedTime).AddHours(1),
+                PatientText = patientName,
+                ApplicationUserId = "41"
+
         };
 
         BookingService.AddBooking(newBooking);
         bookingMade = true;
+        var bookings = BookingService.GetBookings();
     }
 }

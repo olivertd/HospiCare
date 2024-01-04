@@ -1,9 +1,39 @@
-﻿@using HealthCare.Core.Models;
+﻿@using HealthCare.Core.Data;
+@using HealthCare.Core.Models;
+@using HealthCare.Core.Models.Users;
 @inject BookingService BookingService
+
+@if (!bookingMade)
+{
+<form @onsubmit="GenerateAvailableTimeSlots">
+    <label for="selectedDay">Select Day:</label>
+        <input type="date" @bind="selectedDay" />
+
+    <label for="selectedStaff">Select Staff:</label>
+    <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
+            @foreach (var worker in mockDoctors)
+            {
+                <option value="@worker.UserName">@worker.UserName</option>
+            }
+    </select>
+
+    <button type="submit">Show Available Appointments</button>
+</form>
+
+    @if (availableTimeSlots != null)
+    {
+        <h3>Available Appointments:</h3>
+        <ul>
+            @foreach (var timeSlot in availableTimeSlots)
+            {
+                <li>@timeSlot.Hour</li>
+            }
+        </ul>
+    }
+
 
 <h3>Book an Appointment</h3>
 
-<input type="datetime-local" @bind="selectedTime" />
 <input type="text" placeholder="Patient Name" @bind="patientName" />
 <select @bind="selectedService">
     <option value="General Checkup">General Checkup</option>
@@ -11,21 +41,73 @@
   
 </select>
 <button @onclick="BookAppointment">Book</button>
+    
+}
+
+
+@if (bookingMade)
+{
+    <p>Appointment booked. Thank you for choosing HospiCare.</p>
+}
 
 @code {
-    private DateTime selectedTime;
+    private readonly Context database;
+    private DateTime selectedDay;
     private string patientName;
     private string selectedService;
+    private string selectedStaff;
+    private List<Appointment> appointments;
+    private bool bookingMade = false;
+    private List<DateTime> availableTimeSlots;
+    List<ApplicationUser> mockDoctors = ApplicationUser.GenerateMockDoctors();
+
+
+    public BookingComponent(){}
+
+    public BookingComponent(Context database)
+    {
+        this.database = database;
+
+    }
+
+    private List<Appointment> GetBookedAppointments()
+    {
+        var appointments = new List<Appointment>
+            {
+                new Appointment { Id = 1, AppointmentStart = DateTime.Parse("2024-08-17 10:00"), AppointmentEnd = DateTime.Parse("2024-08-17 11:00"), PatientText = "John Doe", ApplicationUserId = "someUserId" },
+                new Appointment { Id = 2, AppointmentStart = DateTime.Parse("2024-08-17 14:30"), AppointmentEnd = DateTime.Parse("2024-08-17 15:30"), PatientText = "Jane Doe", ApplicationUserId = "someOtherUserId" },
+            };
+
+        return appointments;
+    }
+
+
+    private List<DateTime> GenerateAvailableTimeSlots()
+    {
+        var workingHours = Enumerable.Range(8, 10);
+
+        var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDay.Year, selectedDay.Month, selectedDay.Day, hour, 0, 0)).ToList();
+        var bookedTimeSlots = appointments.Select(appointment => appointment.AppointmentStart).ToList();
+        var availableTimeSlots = allTimeSlots.Except(bookedTimeSlots).ToList();
+
+
+
+        
+
+        return availableTimeSlots;
+
+    }
+
 
     private void BookAppointment()
     {
         var newBooking = new Appointment
         {
-            AppointmentStart = selectedTime,
-            AppointmentEnd = selectedTime.AddMinutes(60),
             PatientText = patientName,
+            
         };
 
         BookingService.AddBooking(newBooking);
+        bookingMade = true;
     }
 }

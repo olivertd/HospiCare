@@ -18,7 +18,7 @@
     <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
             @foreach (var worker in workers)
             {
-                <option value="@worker.Id">@worker.UserName</option>
+                <option value="@worker.Email">@worker.Email</option>
             }
     </select>
 
@@ -56,6 +56,8 @@
     <p>Appointment booked. Thank you for choosing HospiCare.</p>
 }
 
+
+
 @code {
     private DateTime selectedDay;
     private string patientName;
@@ -75,16 +77,12 @@
     {
         this.database = database;
         GetWorkers();
-
     }
 
-    public async void GetWorkers()
+    public async Task GetWorkers()
     {
-        
-
         var localWorkers = await UserManager.GetUsersInRoleAsync("Doctor");
         this.workers = (List<ApplicationUser>)localWorkers;
-
     }
 
     private void GenerateAvailableTimeSlots()
@@ -132,5 +130,11 @@
         database.SaveChanges();
         bookingMade = true;
         var bookings = BookingService.GetBookings();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetWorkers();
+        // Other code to render the component
     }
 }

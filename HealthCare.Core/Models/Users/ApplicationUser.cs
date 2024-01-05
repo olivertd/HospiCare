@@ -4,8 +4,6 @@ namespace HealthCare.Core.Models.Users
 {
     public class ApplicationUser : IdentityUser
     {
-        public UserType Type { get; set; } = UserType.Patient;
-
         public List<Appointment> Appointments { get; set; }
 
         public static List<ApplicationUser> GenerateMockDoctors()
@@ -20,7 +18,7 @@ namespace HealthCare.Core.Models.Users
         }
     }
 
-    public enum UserType
+    public enum UserRole
     {
         Patient,
         Doctor,

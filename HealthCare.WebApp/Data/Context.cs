@@ -8,6 +8,7 @@ namespace HealthCare.Core.Data
     public class Context : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<ApplicationUser> Users { get; set; }
 
         public Context(DbContextOptions<Context> options)
         : base(options)

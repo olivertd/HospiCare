@@ -1,8 +1,11 @@
 ﻿@using HealthCare.Core.Data;
 @using HealthCare.Core.Models;
 @using HealthCare.Core.Models.Users;
+@using Microsoft.AspNetCore.Identity;
 @inject BookingService BookingService;
 @inject HealthCare.Core.Data.Context database
+@inject UserManager<ApplicationUser> UserManager
+
 
 
 @if (!bookingMade)
@@ -13,9 +16,9 @@
 
     <label for="selectedStaff">Select Staff:</label>
     <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
-            @foreach (var worker in mockDoctors)
+            @foreach (var worker in workers)
             {
-                <option value="@worker.UserName">@worker.UserName</option>
+                <option value="@worker.Id">@worker.UserName</option>
             }
     </select>
 
@@ -62,14 +65,25 @@
 
     private bool bookingMade = false;
     public List<DateTime> availableTimes;
-    List<ApplicationUser> mockDoctors = ApplicationUser.GenerateMockDoctors();
+    public List<ApplicationUser> workers = new List<ApplicationUser>();
+
 
 
     public BookingComponent(){}
 
-    public BookingComponent(Context database, List<Appointment> appointments)
+    public BookingComponent(Context database, List<Appointment> appointments, List<ApplicationUser> workers)
     {
         this.database = database;
+        GetWorkers();
+
+    }
+
+    public async void GetWorkers()
+    {
+        
+
+        var localWorkers = await UserManager.GetUsersInRoleAsync("Doctor");
+        this.workers = (List<ApplicationUser>)localWorkers;
 
     }
 

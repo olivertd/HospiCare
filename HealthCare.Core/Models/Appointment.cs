@@ -8,14 +8,12 @@ namespace HealthCare.Core.Models
         public DateTime AppointmentStart { get; set; }
         public DateTime AppointmentEnd { get; set; }
         public string PatientText { get; set; }
-        public string ApplicationUserId { get; set; }
-        public ApplicationUser ApplicationUser { get; set; }
+        public string WorkerId { get; set; }
+        public ApplicationUser Worker { get; set; }
+        public string PatientId { get; set; }
+        public ApplicationUser Patient { get; set; }
+        public string typeOfService { get; set; }
 
-        // AG: Ersätt IdentityUser med Patient senare
-
-        // AG: Koppla varje besök till en specific vårdarbetare? Eller inte?
-        //public int WorkerId { get; set; }
-        //public Worker Worker { get; set; }
     }
 }
 

@@ -4,7 +4,8 @@ namespace HealthCare.Core.Models.Users
 {
     public class ApplicationUser : IdentityUser
     {
-        public List<Appointment> Appointments { get; set; }
+        public List<Appointment> WorkerAppointments { get; set; }
+        public List<Appointment> PatientAppointments { get; set; }
 
         public static List<ApplicationUser> GenerateMockDoctors()
         {

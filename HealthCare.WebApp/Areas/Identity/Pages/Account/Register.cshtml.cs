@@ -4,6 +4,7 @@
 
 using HealthCare.Core.Models.Users;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using System.Text.Encodings.Web;
 
 namespace HealthCare.WebApp.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous] // Allow unauthenticated users to accces page to avoid infinite loop
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;

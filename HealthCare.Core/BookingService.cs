@@ -7,23 +7,7 @@ namespace HealthCare.Core
 
         public BookingService()
         {
-            // mock data
-            bookings.Add(new Appointment
-            {
-                Id = 1,
-                AppointmentStart = DateTime.Now.AddHours(2),
-                AppointmentEnd = DateTime.Now.AddHours(2),
-                ApplicationUserId = "1",
-                PatientText = "General Checkup"
-            });
-            bookings.Add(new Appointment
-            {
-                Id = 2,
-                AppointmentStart = DateTime.Now.AddHours(2),
-                AppointmentEnd = DateTime.Now.AddHours(2),
-                ApplicationUserId = "2",
-                PatientText = "General Checkup"
-            });
+            
 
         }
 

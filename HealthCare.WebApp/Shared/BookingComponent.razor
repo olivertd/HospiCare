@@ -5,6 +5,8 @@
 @inject BookingService BookingService;
 @inject HealthCare.Core.Data.Context database
 @inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 
 
@@ -12,23 +14,22 @@
 {
 <form @onsubmit="GenerateAvailableTimeSlots">
     <label for="selectedDay">Select Day:</label>
-        <input type="date" @bind="selectedDay" />
+        <input type="date" @bind="selectedDay" min="@InitializeSelectedDay().ToString("yyyy-MM-dd")" />
 
-    <label for="selectedStaff">Select Staff:</label>
-    <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
+        <label for="selectedStaff">Select Staff:</label>
+        <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
             @foreach (var worker in workers)
             {
-                <option value="@worker.Email">@worker.Email</option>
+                <option value="@worker.Id">@worker.UserName</option>
             }
-    </select>
-
+        </select>
     <button type="submit">Show Available Appointments</button>
 </form>
 
-    @if (availableTimes != null)
+    @if (availableTimes != null && availableTimes.Count() > 0)
     {
         <h3>Available Appointments:</h3>
-        <form @onsubmit="@(e => BookAppointment(selectedTime))">
+        <form @onsubmit="@(e => BookAppointment(selectedTime, selectedStaff))">
             <ul>
                 @foreach (var timeSlot in availableTimes)
                 {
@@ -41,15 +42,20 @@
                 }
             </ul>
 
+            <select @bind="selectedService">
+            <option value="General Checkup">General Checkup</option>
+            <option value="Vaccination">Vaccination</option>
+            </select>
+            <input type="text" @bind="patientText" placeholder="Describe your reason for your appointment..."/>
+
             <button type="submit">Book Selected Time</button>
         </form>
     }
-
-
-
-    
+    if (availableTimes != null && availableTimes.Count() < 1)
+    {
+        <h3>Please select a weekday for available appointments.</h3>
+    }
 }
-
 
 @if (bookingMade)
 {
@@ -57,19 +63,16 @@
 }
 
 
-
 @code {
     private DateTime selectedDay;
     private string patientName;
-    private string selectedService;
+    private string selectedService = "General Checkup";
     private string selectedStaff;
     private string selectedTime;
-
+    private string patientText;
     private bool bookingMade = false;
     public List<DateTime> availableTimes;
     public List<ApplicationUser> workers = new List<ApplicationUser>();
-
-
 
     public BookingComponent(){}
 
@@ -81,8 +84,40 @@
 
     public async Task GetWorkers()
     {
-        var localWorkers = await UserManager.GetUsersInRoleAsync("Doctor");
-        this.workers = (List<ApplicationUser>)localWorkers;
+        try
+        {
+            var doctors = await UserManager.GetUsersInRoleAsync("Doctor");
+            var nurses = await UserManager.GetUsersInRoleAsync("Nurse");
+
+            var localWorkers = doctors.Concat(nurses);
+
+            this.workers = localWorkers.ToList();
+            selectedStaff = workers.Any() ? workers[0].Id : null; // Check if any workers are present before accessing the first one
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception as needed
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            // You can log the exception or take appropriate action based on your requirements
+        }
+
+    }
+
+    private DateTime InitializeSelectedDay()
+    {
+        DateTime today = DateTime.Today;
+
+        // If today is Saturday or Sunday, set it to the next Monday
+        if (today.DayOfWeek == DayOfWeek.Saturday)
+        {
+            return today.AddDays(2);
+        }
+        else if (today.DayOfWeek == DayOfWeek.Sunday)
+        {
+            return today.AddDays(1);
+        }
+
+        return today;
     }
 
     private void GenerateAvailableTimeSlots()
@@ -95,46 +130,53 @@
 
 
         var bookedTimeSlots = database.Appointments
+        .Where(appointment => appointment.WorkerId == selectedStaff)
         .Select(appointment => appointment.AppointmentStart)
         .ToList();
 
         availableTimeSlots = allTimeSlots
         .Except(bookedTimeSlots)
-        .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 18)
+        .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 17 && IsWeekday(timeSlot.DayOfWeek))
         .ToList();
 
-
-
-
-
-
-
         availableTimes = availableTimeSlots;
+    }
 
+    private bool IsWeekday(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek != DayOfWeek.Saturday && dayOfWeek != DayOfWeek.Sunday;
     }
 
 
-    private void BookAppointment(string selectedtime)
+    private async void BookAppointment(string selectedtime, string selectedStaff)
     {
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+
+        var currentUser = await UserManager.GetUserAsync(user);
 
         var newBooking = new Appointment
             {
                 AppointmentStart = DateTime.Parse(selectedTime),
                 AppointmentEnd = DateTime.Parse(selectedTime).AddHours(1),
-                PatientText = "Name Nameson",
-                ApplicationUserId = "fcfd2443-82c3-49e3-b1c0-fc5883e0ba6a"
-
+                PatientText = patientText,
+                PatientId = currentUser.Id,
+                WorkerId = selectedStaff,
+                typeOfService = selectedService,
         };
 
         database.Appointments.Add(newBooking);
-        database.SaveChanges();
+        database.SaveChangesAsync();
         bookingMade = true;
-        var bookings = BookingService.GetBookings();
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
     {
         await GetWorkers();
-        // Other code to render the component
+
+        selectedDay = InitializeSelectedDay();
     }
 }

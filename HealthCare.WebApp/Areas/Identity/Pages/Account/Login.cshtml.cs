@@ -18,6 +18,8 @@ using Microsoft.Extensions.Logging;
 
 namespace HealthCare.WebApp.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous] // Allow unauthenticated users to accces page to avoid infinite loop
+
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;

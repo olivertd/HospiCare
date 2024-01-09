@@ -69,7 +69,7 @@
     private string selectedService = "General Checkup";
     private string selectedStaff;
     private string selectedTime;
-    private string patientText;
+    private string patientText = "";
     private bool bookingMade = false;
     public List<DateTime> availableTimes;
     public List<ApplicationUser> workers = new List<ApplicationUser>();
@@ -153,22 +153,14 @@
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
-
         var currentUser = await UserManager.GetUserAsync(user);
 
-        var newBooking = new Appointment
-            {
-                AppointmentStart = DateTime.Parse(selectedTime),
-                AppointmentEnd = DateTime.Parse(selectedTime).AddHours(1),
-                PatientText = patientText,
-                PatientId = currentUser.Id,
-                WorkerId = selectedStaff,
-                typeOfService = selectedService,
-        };
+        if(patientText == "")
+        {
+            patientText = "No description was provided.";
+        }
 
-        database.Appointments.Add(newBooking);
-        database.SaveChangesAsync();
+        await BookingService.BookAppointment(selectedTime, selectedStaff, currentUser.Id, patientText, selectedService);
         bookingMade = true;
         StateHasChanged();
     }

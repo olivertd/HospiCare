@@ -64,6 +64,11 @@
 
 
 @code {
+
+    public AuthenticationStateProvider AuthenticationStateProviders { get; set; }
+    public UserManager<ApplicationUser> UserManagers { get; set; }
+    public BookingService BookingServices;
+
     private DateTime selectedDay;
     private string patientName;
     private string selectedService = "General Checkup";

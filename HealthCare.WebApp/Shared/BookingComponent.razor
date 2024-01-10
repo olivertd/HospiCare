@@ -55,6 +55,11 @@
     {
         <h3>Please select a weekday for available appointments.</h3>
     }
+
+    if (!string.IsNullOrEmpty(error))
+    {
+        <p>@error</p>
+    }
 }
 
 @if (bookingMade)
@@ -76,6 +81,7 @@
     private string selectedTime;
     private string patientText = "";
     private bool bookingMade = false;
+    private string error;
     public List<DateTime> availableTimes;
     public List<ApplicationUser> workers = new List<ApplicationUser>();
 
@@ -156,18 +162,27 @@
     private async void BookAppointment(string selectedtime, string selectedStaff)
     {
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        var currentUser = await UserManager.GetUserAsync(user);
-
-        if(patientText == "")
+        try
         {
-            patientText = "No description was provided.";
-        }
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var currentUser = await UserManager.GetUserAsync(user);
 
-        await BookingService.BookAppointment(selectedTime, selectedStaff, currentUser.Id, patientText, selectedService);
-        bookingMade = true;
-        StateHasChanged();
+            if (patientText == "")
+            {
+                patientText = "No description was provided.";
+            }
+
+            await BookingService.BookAppointment(selectedTime, selectedStaff, currentUser.Id, patientText, selectedService);
+            bookingMade = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception, and optionally update a property to reflect the error in the UI
+            error = "Something went wrong, please try again.";
+            StateHasChanged();
+        }
     }
 
     protected override async Task OnInitializedAsync()

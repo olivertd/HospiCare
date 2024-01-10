@@ -1,5 +1,6 @@
 ﻿using HealthCare.Core.Data;
 using HealthCare.Core.Models;
+using System.Security.Permissions;
 namespace HealthCare.Core
 {
     public class BookingService
@@ -48,6 +49,20 @@ namespace HealthCare.Core
                 await database.SaveChangesAsync();
             }
             
+        }
+
+        public async Task DeleteAppointment(Appointment appointment)
+        {
+            try
+            {
+                database.Appointments.Remove(appointment);
+                await database.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw new InvalidOperationException("No such appointment exists.");
+            }
         }
 
         public IEnumerable<Appointment> GetBookings()

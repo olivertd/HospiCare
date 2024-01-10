@@ -1,31 +1,194 @@
-﻿@using HealthCare.Core.Models;
-@inject BookingService BookingService
+﻿@using HealthCare.Core.Data;
+@using HealthCare.Core.Models;
+@using HealthCare.Core.Models.Users;
+@using Microsoft.AspNetCore.Identity;
+@inject BookingService BookingService;
+@inject HealthCare.Core.Data.Context database
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h3>Book an Appointment</h3>
 
-<input type="datetime-local" @bind="selectedTime" />
-<input type="text" placeholder="Patient Name" @bind="patientName" />
-<select @bind="selectedService">
-    <option value="General Checkup">General Checkup</option>
-    <option value="Vaccination">Vaccination</option>
-  
-</select>
-<button @onclick="BookAppointment">Book</button>
+
+
+@if (!bookingMade)
+{
+<form @onsubmit="GenerateAvailableTimeSlots">
+    <label for="selectedDay">Select Day:</label>
+        <input type="date" @bind="selectedDay" min="@InitializeSelectedDay().ToString("yyyy-MM-dd")" />
+
+        <label for="selectedStaff">Select Staff:</label>
+        <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
+            @foreach (var worker in workers)
+            {
+                <option value="@worker.Id">@worker.UserName</option>
+            }
+        </select>
+    <button type="submit">Show Available Appointments</button>
+</form>
+
+    @if (availableTimes != null && availableTimes.Count() > 0)
+    {
+        <h3>Available Appointments:</h3>
+        <form @onsubmit="@(e => BookAppointment(selectedTime, selectedStaff))">
+            <ul>
+                @foreach (var timeSlot in availableTimes)
+                {
+                    <li>
+                        <label>
+                            <input type="radio" name="selectedTime" value="@timeSlot.ToString("yyyy-MM-dd HH:mm:ss")" @onchange="@(e => selectedTime = e.Value.ToString())" />
+                            @timeSlot.Hour:00 - @(timeSlot.Hour + 1):00
+                        </label>
+                    </li>
+                }
+            </ul>
+
+            <select @bind="selectedService">
+            <option value="General Checkup">General Checkup</option>
+            <option value="Vaccination">Vaccination</option>
+            </select>
+            <input type="text" @bind="patientText" placeholder="Describe your reason for your appointment..."/>
+
+            <button type="submit">Book Selected Time</button>
+        </form>
+    }
+    if (availableTimes != null && availableTimes.Count() < 1)
+    {
+        <h3>Please select a weekday for available appointments.</h3>
+    }
+
+    if (!string.IsNullOrEmpty(error))
+    {
+        <p>@error</p>
+    }
+}
+
+@if (bookingMade)
+{
+    <p>Appointment booked. Thank you for choosing HospiCare.</p>
+}
+
 
 @code {
-    private DateTime selectedTime;
+
+    public AuthenticationStateProvider AuthenticationStateProviders { get; set; }
+    public UserManager<ApplicationUser> UserManagers { get; set; }
+    public BookingService BookingServices;
+
+    private DateTime selectedDay;
     private string patientName;
-    private string selectedService;
+    private string selectedService = "General Checkup";
+    private string selectedStaff;
+    private string selectedTime;
+    private string patientText = "";
+    private bool bookingMade = false;
+    private string error;
+    public List<DateTime> availableTimes;
+    public List<ApplicationUser> workers = new List<ApplicationUser>();
 
-    private void BookAppointment()
+    public BookingComponent(){}
+
+    public BookingComponent(Context database, List<Appointment> appointments, List<ApplicationUser> workers)
     {
-        var newBooking = new Appointment
-        {
-            AppointmentStart = selectedTime,
-            AppointmentEnd = selectedTime.AddMinutes(60),
-            PatientText = patientName,
-        };
+        this.database = database;
+        GetWorkers();
+    }
 
-        BookingService.AddBooking(newBooking);
+    public async Task GetWorkers()
+    {
+        try
+        {
+            var doctors = await UserManager.GetUsersInRoleAsync("Doctor");
+            var nurses = await UserManager.GetUsersInRoleAsync("Nurse");
+
+            var localWorkers = doctors.Concat(nurses);
+
+            this.workers = localWorkers.ToList();
+            selectedStaff = workers.Any() ? workers[0].Id : null; // Check if any workers are present before accessing the first one
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception as needed
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            // You can log the exception or take appropriate action based on your requirements
+        }
+
+    }
+
+    private DateTime InitializeSelectedDay()
+    {
+        DateTime today = DateTime.Today;
+
+        // If today is Saturday or Sunday, set it to the next Monday
+        if (today.DayOfWeek == DayOfWeek.Saturday)
+        {
+            return today.AddDays(2);
+        }
+        else if (today.DayOfWeek == DayOfWeek.Sunday)
+        {
+            return today.AddDays(1);
+        }
+
+        return today;
+    }
+
+    private void GenerateAvailableTimeSlots()
+    {
+        var workingHours = Enumerable.Range(8, 10);
+
+        var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDay.Year, selectedDay.Month, selectedDay.Day, hour, 0, 0)).ToList();
+
+        var availableTimeSlots = allTimeSlots;
+
+
+        var bookedTimeSlots = database.Appointments
+        .Where(appointment => appointment.WorkerId == selectedStaff)
+        .Select(appointment => appointment.AppointmentStart)
+        .ToList();
+
+        availableTimeSlots = allTimeSlots
+        .Except(bookedTimeSlots)
+        .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 17 && IsWeekday(timeSlot.DayOfWeek))
+        .ToList();
+
+        availableTimes = availableTimeSlots;
+    }
+
+    private bool IsWeekday(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek != DayOfWeek.Saturday && dayOfWeek != DayOfWeek.Sunday;
+    }
+
+
+    private async void BookAppointment(string selectedtime, string selectedStaff)
+    {
+
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var currentUser = await UserManager.GetUserAsync(user);
+
+            if (patientText == "")
+            {
+                patientText = "No description was provided.";
+            }
+
+            await BookingService.BookAppointment(selectedTime, selectedStaff, currentUser.Id, patientText, selectedService);
+            bookingMade = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception, and optionally update a property to reflect the error in the UI
+            error = "Something went wrong, please try again.";
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetWorkers();
+
+        selectedDay = InitializeSelectedDay();
     }
 }

@@ -2,6 +2,7 @@ using HealthCare.Areas.Identity;
 using HealthCare.Core;
 using HealthCare.Core.Data;
 using HealthCare.Core.Models.Users;
+using HealthCare.WebApp.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<AppointmentService>();
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<BookingComponent>();
 
 // Configure Authorization to require authenticated users by default
 builder.Services.AddAuthorization(options =>

@@ -15,11 +15,83 @@ a, .btn-link {
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
-    border-color: #1861ac;
+    border-radius: 5px;
+    border-color: #1b6ec2;
 }
 
+.label-text {
+    color: #666;
+}
+
+.select-wrap {
+    width: 16em;
+}
+
+.date {
+    position: relative;
+    width: 154px;
+    overflow: auto;
+    background: #000;
+    border-radius: 5px;
+}
+
+.date-wrap {
+    position: relative;
+    width: 154px;
+    overflow: auto;
+}
+
+.dateinput {
+    width: 100%;
+    padding: 7px;
+    display: block;
+    border-radius: 6px;
+    display: inline-block;
+    border: 1px solid #CCC;
+    color: #666;
+}
+        .dateinput:focus {
+            border: 1px solid #CCC;
+        }
+
+
+.custom-select {
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    margin: 0 auto;
+    padding: 10px;
+    width: 100%;
+    color: #666;
+}
+
+.booking-inputs {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    align-items: end;
+    margin-bottom: 2em;
+}
+    @media (max-width: 760px){
+
+        .booking-inputs {
+            display:grid;
+            grid-template: "a b" "c c" / 1fr 1fr
+        }
+
+        .booking-inputs > .btn-primary {
+                grid-area: c;
+                width: 100%;
+        }
+
+        .booking-inputs > .date-wrap, .booking-inputs > .select-wrap {
+                width: 100%;
+        }
+    }
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -66,4 +138,3 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
-

@@ -1,5 +1,6 @@
 ﻿using HealthCare.Core.Models;
 using HealthCare.Core.Models.Users;
+using HealthCare.WebApp.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,8 @@ namespace HealthCare.Core.Data
     {
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<ApplicationUser> Users { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
+
 
         public Context(DbContextOptions<Context> options)
         : base(options)

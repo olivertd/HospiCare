@@ -37,7 +37,7 @@
                 <label asp-for="Input.ConfirmPassword">Confirm Password</label>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
-            <div class="form-check">
+            <div class="form-check" style="margin-bottom: 2em">
                 <p>Select user type</p>
                 <label>
                     <input asp-for="Input.UserType" type="radio" value="@UserRole.Patient" />
@@ -53,7 +53,7 @@
                 </label>
             </div>
 
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary" style="margin-bottom: 2em;">Register</button>
         </form>
     </div>
 </div>

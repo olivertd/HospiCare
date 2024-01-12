@@ -2,7 +2,7 @@ using HealthCare.Areas.Identity;
 using HealthCare.Core;
 using HealthCare.Core.Data;
 using HealthCare.Core.Models.Users;
-using HealthCare.WebApp.Shared;
+using HealthCare.WebApp.Pages.Appointment;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

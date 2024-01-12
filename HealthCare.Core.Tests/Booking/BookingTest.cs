@@ -1,17 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Net.Mime;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using HealthCare.Core.Data;
+﻿using HealthCare.Core.Data;
 using HealthCare.Core.Models;
 using HealthCare.Core.Models.Users;
-using HealthCare.WebApp.Shared;
+using HealthCare.WebApp.Pages.Appointment;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Xunit;
+using System.Security.Claims;
 
 namespace HealthCare.Core.Tests.Booking
 {

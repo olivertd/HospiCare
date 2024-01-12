@@ -30,7 +30,7 @@
 
 @code {
 
-    private List<Appointment> UserAppointments { get; set; }
+    private List<Appointment> UserAppointments { get; set; } = new List<Appointment>();
 
     // Load data on start
     protected override async Task OnInitializedAsync()
@@ -47,8 +47,12 @@
         var user = authState.User;
         var currentUser = UserManager.GetUserAsync(user).GetAwaiter().GetResult();
 
-        var appointments = database.Appointments.Where(t => t.PatientId == currentUser.Id).ToList();
-        UserAppointments = appointments;
+
+
+        if(currentUser != null)
+        {
+            UserAppointments = database.Appointments.Where(t => t.PatientId == currentUser.Id).ToList();
+        }
     }
 
     private async Task DeleteAppointment(int id)

@@ -6,35 +6,40 @@
 @inject HealthCare.Core.Data.Context database
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@page "/book-appointment"
 
-
-
-
+<h1>Book an appoinment</h1>
 @if (!bookingMade)
 {
-<form @onsubmit="GenerateAvailableTimeSlots">
-    <label for="selectedDay">Select Day:</label>
-        <input type="date" @bind="selectedDay" min="@InitializeSelectedDay().ToString("yyyy-MM-dd")" />
+    <form @onsubmit="GenerateAvailableTimeSlots">
+        <div class="booking-inputs">
+            <div class="date-wrap">
+                <label for="selectedDay" class="label-text">Select day</label>
+                <input type="date" @bind="selectedDay" min="@InitializeSelectedDay().ToString("yyyy-MM-dd")" class="dateinput" />
+            </div>
+            <div class="select-wrap">
+                <label for="selectedStaff" class="label-text">Select staff</label>
+                <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff" class="custom-select">
+                    @foreach (var worker in workers)
+                    {
+                        <option value="@worker.Id">@worker.FirstName @worker.LastName</option>
+                    }
+                </select>
 
-        <label for="selectedStaff">Select Staff:</label>
-        <select id="selectedStaff" name="selectedStaff" @bind="selectedStaff">
-            @foreach (var worker in workers)
-            {
-                <option value="@worker.Id">@worker.UserName</option>
-            }
-        </select>
-    <button type="submit">Show Available Appointments</button>
-</form>
+            </div>
+            <button type="submit" class="btn-primary" style="height: 41px">Show available times</button>
+        </div>
+    </form>
 
     @if (availableTimes != null && availableTimes.Count() > 0)
     {
         <h3>Available Appointments:</h3>
         <form @onsubmit="@(e => BookAppointment(selectedTime, selectedStaff))">
-            <ul>
+            <ul class="time-list">
                 @foreach (var timeSlot in availableTimes)
                 {
                     <li>
-                        <label>
+                        <label class="time-label">
                             <input type="radio" name="selectedTime" value="@timeSlot.ToString("yyyy-MM-dd HH:mm:ss")" @onchange="@(e => selectedTime = e.Value.ToString())" />
                             @timeSlot.Hour:00 - @(timeSlot.Hour + 1):00
                         </label>
@@ -42,13 +47,21 @@
                 }
             </ul>
 
-            <select @bind="selectedService">
-            <option value="General Checkup">General Checkup</option>
-            <option value="Vaccination">Vaccination</option>
-            </select>
-            <input type="text" @bind="patientText" placeholder="Describe your reason for your appointment..."/>
+            
+            <div class="confirmation-booking">
+            <textarea @bind="patientText" placeholder="Describe your reason for your appointment..." />
+            <div>
+            <div class="select-wrap" style="width: 100%">
+                <label for="selectedService" class="label-text">Appointment type</label>
+                <select id="selectedService" @bind="selectedService" class="custom-select">
+                    <option value="General Checkup">General Checkup</option>
+                    <option value="Vaccination">Vaccination</option>
+                </select>
+            </div>
 
-            <button type="submit">Book Selected Time</button>
+            <button type="submit" class="btn-primary" style="height: 3em">Book Selected Time</button>
+            </div>
+            </div>
         </form>
     }
     if (availableTimes != null && availableTimes.Count() < 1)
@@ -85,7 +98,7 @@
     public List<DateTime> availableTimes;
     public List<ApplicationUser> workers = new List<ApplicationUser>();
 
-    public BookingComponent(){}
+    public BookingComponent() { }
 
     public BookingComponent(Context database, List<Appointment> appointments, List<ApplicationUser> workers)
     {

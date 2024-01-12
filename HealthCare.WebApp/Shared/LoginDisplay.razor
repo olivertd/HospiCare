@@ -6,15 +6,15 @@
         </form>
         @if (context.User.IsInRole("Doctor"))
         {
-            <p>Signed in as: Doctor.</p>
+            <p style="margin: 0;">Signed in as: Doctor</p>
         }
         else if (context.User.IsInRole("Nurse"))
         {
-            <p>Signed in as: Nurse.</p>
+            <p style="margin: 0;">  Signed in as: Nurse</p>
         }
         else if (context.User.IsInRole("Patient"))
         {
-            <p>Signed in as: Patient.</p>
+            <p style="margin: 0;">Signed in as: Patient</p>
         }
     </Authorized>
     <NotAuthorized>

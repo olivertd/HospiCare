@@ -8,6 +8,7 @@ namespace HealthCare.Core.Data
     public class Context : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<ApplicationUser> Users { get; set; }
 
         public Context(DbContextOptions<Context> options)
         : base(options)
@@ -19,10 +20,18 @@ namespace HealthCare.Core.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Appointment>()
-                .HasOne(c => c.ApplicationUser)
-                .WithMany(a => a.Appointments)
-                .HasForeignKey(c => c.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(a => a.Worker)
+                .WithMany(u => u.WorkerAppointments) // Assuming you have a navigation property for worker appointments
+                .HasForeignKey(a => a.WorkerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Patient)
+                .WithMany(u => u.PatientAppointments) // Assuming you have a navigation property for patient appointments
+                .HasForeignKey(a => a.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
         }
     }
 }

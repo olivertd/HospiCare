@@ -1,4 +1,9 @@
 ﻿@import url("open-iconic/font/css/open-iconic-bootstrap.min.css");
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap");
+
+body {
+  font-family: "Nunito Sans", sans-serif !important;
+}
 
 html,
 body {
@@ -45,7 +50,7 @@ a,
 
 .dateinput {
   width: 100%;
-  padding: 7px;
+  padding: 10px;
   display: block;
   border-radius: 6px;
   display: inline-block;
@@ -92,7 +97,7 @@ a,
 }
 
 .time-label {
-  width: 10em;
+  width: 100%;
   padding: 8px;
   text-align: center;
   background-color: #e2e0e0;
@@ -120,8 +125,12 @@ a,
   list-style: none;
   flex-direction: row;
   flex-wrap: wrap;
-  width: 24em;
+  width: clamp(10em, 100%, 27em);
   padding: 0;
+}
+
+.time-list > li {
+  width: 47%;
 }
 
 .confirmation-booking {
@@ -129,6 +138,7 @@ a,
   flex-direction: column;
   gap: 1em;
   width: clamp(200px, 100%, 433px);
+  margin-bottom: 2em;
 }
 
 .confirmation-booking > div {

@@ -1,0 +1,68 @@
+﻿@using HealthCare.Core.Data;
+@using HealthCare.Core.Models;
+@using HealthCare.Core.Models.Users;
+@using Microsoft.AspNetCore.Identity;
+@inject HealthCare.Core.Data.Context database
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@inject IJSRuntime jsRuntime
+
+<div>
+    <h3>Dashboard</h3>
+    @if (UserAppointments != null && UserAppointments.Any())
+    {
+        <h4>Your Appointments:</h4>
+        <ul>
+            @foreach (var appointment in UserAppointments)
+            {
+                <li>Start: @appointment.AppointmentStart.ToString("yyyy-M-dd HH:mm") - @appointment.AppointmentEnd.ToString("yyyy-M-dd HH:mm"): @appointment.PatientText
+                    <button @onclick="() => DeleteAppointment(appointment.Id)">Delete</button>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No appointments found.</p>
+    }
+</div>
+
+@code {
+
+    private List<Appointment> UserAppointments { get; set; }
+
+    // Load data on start
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAppointments();
+
+        base.OnInitialized();
+    }
+
+    // Load user appointments
+    private async Task LoadAppointments()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var currentUser = UserManager.GetUserAsync(user).GetAwaiter().GetResult();
+
+        var appointments = database.Appointments.Where(t => t.PatientId == currentUser.Id).ToList();
+        UserAppointments = appointments;
+    }
+
+    private async Task DeleteAppointment(int id)
+    {
+        // Log a message to the browser console
+        var appointmentToDelete = database.Appointments.Where(a => a.Id == id).FirstOrDefault();
+
+        bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this appointment?");
+        if (confirmed)
+        {
+            database.Appointments.Remove(appointmentToDelete);
+            await database.SaveChangesAsync();
+            await LoadAppointments();
+            StateHasChanged();
+        }
+    }
+}

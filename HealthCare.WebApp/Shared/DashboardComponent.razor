@@ -47,7 +47,7 @@
         var user = authState.User;
         var currentUser = UserManager.GetUserAsync(user).GetAwaiter().GetResult();
 
-        var appointments = database.Appointments.Where(t => t.ApplicationUserId == currentUser.Id).ToList();
+        var appointments = database.Appointments.Where(t => t.PatientId == currentUser.Id).ToList();
         UserAppointments = appointments;
     }
 

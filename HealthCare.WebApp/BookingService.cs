@@ -51,29 +51,6 @@ namespace HealthCare.Core
             
         }
 
-        public async Task DeleteAppointment(Appointment appointment)
-        {
-            try
-            {
-                database.Appointments.Remove(appointment);
-                await database.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-
-                throw new InvalidOperationException("No such appointment exists.");
-            }
-        }
-
-        public IEnumerable<Appointment> GetBookings()
-        {
-            return bookings;
-        }
-
-        public void AddBooking(Appointment booking)
-        {
-            bookings.Add(booking);
-        }
     }
 }
 

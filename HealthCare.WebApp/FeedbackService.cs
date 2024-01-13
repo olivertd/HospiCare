@@ -1,30 +1,39 @@
-﻿using System;
+﻿using HealthCare.Core.Data;
+using HealthCare.WebApp.Models;
+using System;
 namespace HealthCare.Core
 {
     public class FeedbackService
     {
-        private List<string> feedbackList = new List<string>();
+        private readonly Context database;
+
+        public FeedbackService(Context database)
+        {
+            this.database = database;
+        }
 
         public FeedbackService()
         {
-            LoadDummyData();
         }
 
-        private void LoadDummyData()
+        
+
+        public async Task SaveFeedback(string body, int rating, int appointmentID)
         {
-            // mock data
-            feedbackList.Add("Great service, thank you!");
-            feedbackList.Add("Very satisfied with the care provided.");
+            var feedback = new Feedback
+            {
+                Rating = rating,
+                AppointmentID = appointmentID,
+                Body = body
+            };
+            database.Feedbacks.Add(feedback);
+            await database.SaveChangesAsync();
         }
 
-        public void SaveFeedback(string feedback)
+        public List<Feedback> GetAllFeedback()
         {
-            feedbackList.Add(feedback);
-        }
 
-        public IEnumerable<string> GetAllFeedback()
-        {
-            return feedbackList;
+            return database.Feedbacks.ToList();
         }
     }
 }

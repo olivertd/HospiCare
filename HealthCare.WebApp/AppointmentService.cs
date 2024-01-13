@@ -1,32 +1,35 @@
-﻿using System;
+﻿using HealthCare.Core.Data;
+using HealthCare.Core.Models;
+using System;
 namespace HealthCare.Core
 {
 	public class AppointmentService
 	{
-        private List<AppointmentDetails> appointments;
 
-        public AppointmentService()
+        private List<Appointment> bookings = new List<Appointment>();
+
+        private readonly Context database;
+
+        public AppointmentService(Context database)
         {
-            // mock data
-            appointments = new List<AppointmentDetails>
+            this.database = database;
+        }
+
+        public async Task DeleteAppointment(Appointment appointment)
+        {
+            try
             {
-                new AppointmentDetails { Id = "1", PatientId = "100", Details = "Appointment with Dr. Smith" },
-                new AppointmentDetails { Id = "2", PatientId = "101", Details = "Appointment with Dr. Johnson" }
-            };
+                database.Appointments.Remove(appointment);
+                await database.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw new InvalidOperationException("No such appointment exists.");
+            }
         }
 
-        public AppointmentDetails GetAppointmentDetails(string appointmentId)
-        {
-            return appointments.FirstOrDefault(a => a.Id == appointmentId);
-        }
-
-
-        public class AppointmentDetails
-        {
-            public string Id { get; set; }
-            public string PatientId { get; set; }
-            public string Details { get; set; }
-        }
+       
     }
 }
 

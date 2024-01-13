@@ -3,23 +3,13 @@
 @*sets the component as a route, nav is changes to this route => see NavMenu*@
 @page "/feedback"
 
-<h3>Leave Feedback</h3>
-<input @bind="userFeedback" />
-<button @onclick="SubmitFeedback">Submit Feedback</button>
-
-<h3 class="feedback">All Feedback</h3>
+<h3>Past Feedback:</h3>
 @foreach (var feedback in feedbackService.GetAllFeedback())
 {
-    <p>@feedback</p>
+    <p>@feedback.Body</p>
+    <p>Rating: @feedback.Rating/5</p>
 }
 
 @code {
-    private string userFeedback;
-
-    private void SubmitFeedback()
-    {
-        feedbackService.SaveFeedback(userFeedback);
-        // reset the input field
-        userFeedback = string.Empty; 
-    }
+    
 }

@@ -1,14 +1,23 @@
 ﻿@*the AppointmentService is added in program.cs *@
 @inject FeedbackService feedbackService
+@inject HealthCare.Core.Data.Context database
 @*sets the component as a route, nav is changes to this route => see NavMenu*@
 @page "/feedback"
 
 <h3>Past Feedback:</h3>
 @foreach (var feedback in feedbackService.GetAllFeedback())
 {
+    var patientId = database.Appointments
+                    .Where(a => a.Id == feedback.AppointmentID)
+                    .Select(a => a.PatientId)
+                    .FirstOrDefault();
+
+    var patient = database.Users.FirstOrDefault(p => p.Id == patientId);
+
     <p>@feedback.Body</p>
     <p>Rating: @feedback.Rating/5</p>
-}
+    <p>Review by: @patient.FirstName @patient.LastName</p>
+}   
 
 @code {
     

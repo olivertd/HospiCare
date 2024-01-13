@@ -22,7 +22,7 @@
                 <li>Start: @appointment.AppointmentStart.ToString("yyyy-M-dd HH:mm") - @appointment.AppointmentEnd.ToString("yyyy-M-dd HH:mm"): @appointment.PatientText
                     <button @onclick="() => DeleteAppointment(appointment.Id)">Delete</button>
 
-                    @if (!feedbackExists)
+                    @if (!feedbackExists && appointment.AppointmentEnd < DateTime.Now)
                     {
                         <FeedbackComponent appointmentId="@appointment.Id" />
                     }
@@ -43,6 +43,7 @@
     public AuthenticationStateProvider AuthenticationStateProviders { get; set; }
     public UserManager<ApplicationUser> UserManagers { get; set; }
     public AppointmentService AppointmentServices;
+    public FeedbackService FeedbackServices;
 
     public DashboardComponent(){}
 

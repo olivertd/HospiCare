@@ -2,6 +2,7 @@
 using HealthCare.Core.Models;
 using HealthCare.Core.Models.Users;
 using HealthCare.WebApp.Pages.Appointment;
+using HealthCare.WebApp.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -50,12 +51,10 @@ namespace HealthCare.Core.Tests.Booking
                 BookingServices = bookingService
             };
 
-            // Act: Call the method or property that you want to test
-            // Assuming you have a method like BookAppointment, call it here
+            // Act
             await page.BookingServices.BookAppointment("2024-01-09 11:00:00", "workerID123", currentUser.Id, "No description was provided.", "General Checkup");
 
             // Assert: Verify the expected result
-            // Check if the appointment was added to the database, or any other relevant assertions
             var bookedAppointment = context.Appointments.FirstOrDefault(a => a.PatientId == currentUser.Id);
             Assert.NotNull(bookedAppointment);
         }
@@ -98,14 +97,13 @@ namespace HealthCare.Core.Tests.Booking
                 BookingServices = bookingService
             };
 
-            // Act: Call the method or property that you want to test
-            // Assuming you have a method like BookAppointment, call it here
+            // Act
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 await page.BookingServices.BookAppointment("2024-01-09 09:00:00", "workerID123", currentUser.Id, "No description was provided.", "General Checkup");
             });
 
-            // Assert: Verify the expected result
+            // Assert
             // Check if the exception is of the expected type
             Assert.NotNull(exception);
         }
@@ -141,17 +139,17 @@ namespace HealthCare.Core.Tests.Booking
             context.Appointments.Add(appointment);
             context.SaveChanges();
 
-            var bookingService = new BookingService(context);
-            var page = new BookingComponent(context, null, null)
+            var appointmentService = new AppointmentService(context);
+            var page = new DashboardComponent()
             {
                 UserManagers = userManager,
                 AuthenticationStateProviders = authenticationStateProviderMock.Object,
-                BookingServices = bookingService
+                AppointmentServices = appointmentService
             };
 
             // Act: Call the method or property that you want to test
             // Assuming you have a method like BookAppointment, call it here
-            await page.BookingServices.DeleteAppointment(appointment);
+            await page.AppointmentServices.DeleteAppointment(appointment);
 
             // Assert: Verify the expected result
             // Check if the appointment was added to the database, or any other relevant assertions

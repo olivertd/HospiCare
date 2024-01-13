@@ -3,33 +3,50 @@
 @using HealthCare.WebApp.Models
 @using Microsoft.AspNetCore.Identity;
 @using HealthCare.WebApp.Models;
+@using Microsoft.EntityFrameworkCore
 @inject FeedbackService feedbackService
-@inject HealthCare.Core.Data.Context database
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h3>Leave Feedback</h3>
-<input type="text" @bind="userFeedback" />
-@foreach (var option in ratingOptions)
+@if (!feedbackSubmitted)
 {
-    <label>
-        <input type="radio" value="@option" checked="@(rating == option)" @onclick="() => SetRating(option)" />
-    </label>
+    <div>
+        <h3>Leave Feedback</h3>
+        <input type="text" @bind="userFeedback" />
+        @foreach (var option in ratingOptions)
+        {
+            <label>
+                <input type="radio" value="@option" checked="@(rating == option)" @onclick="() => SetRating(option)" />
+            </label>
+        }
+
+        <p>@rating</p>
+
+        <button @onclick="SubmitFeedback">Submit Feedback</button>
+    </div>
+}
+else
+{
+    <p>Feedback submitted. Thank you!</p>
 }
 
-<p>@rating</p>
 
-<button @onclick="SubmitFeedback">Submit Feedback</button>
+
 
     
 
 @code {
 
+    [Parameter]
+    public int appointmentId { get; set; }
 
     private string userFeedback;
     private int rating;
-    private int appointmentId;
     private List<int> ratingOptions = new List<int> { 1, 2, 3, 4, 5 };
+    private bool feedbackSubmitted;
+
+    public FeedbackComponent(){}
+
 
     private void SetRating(int value)
     {
@@ -39,10 +56,11 @@
     private void SubmitFeedback()
     {
         feedbackService.SaveFeedback(userFeedback, rating, appointmentId);
+        feedbackSubmitted = true;
+
 
         // reset the input field
     }
     
     }
 
-}

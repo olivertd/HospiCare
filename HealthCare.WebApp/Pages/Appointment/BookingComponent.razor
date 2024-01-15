@@ -31,7 +31,7 @@
         </div>
     </form>
 
-    @if (availableTimes != null && availableTimes.Count() > 0)
+    @if (availableTimes != null && availableTimes.Count() > 0 && !unavailableDate)
     {
         <h3>Available Appointments:</h3>
         <form @onsubmit="@(e => BookAppointment(selectedTime, selectedStaff))">
@@ -64,9 +64,15 @@
             </div>
         </form>
     }
-    if (availableTimes != null && availableTimes.Count() < 1)
+    else if (availableTimes != null && availableTimes.Count() < 1)
     {
-        <h3>Please select a weekday for available appointments.</h3>
+        <h3>No available appointments found.</h3>
+
+    }
+    else if (unavailableDate)
+    {
+        <h3>No available appointments found.</h3>
+
     }
 
     if (!string.IsNullOrEmpty(error))
@@ -94,6 +100,7 @@
     private string selectedTime;
     private string patientText = "";
     private bool bookingMade = false;
+    private bool unavailableDate;
     private string error;
     public List<DateTime> availableTimes;
     public List<ApplicationUser> workers = new List<ApplicationUser>();
@@ -146,6 +153,15 @@
 
     private void GenerateAvailableTimeSlots()
     {
+        this.unavailableDate = false;
+
+        DateTime? unavailableDate = database.WorkerUnavailabilities.Where(d => d.WorkerId == selectedStaff && d.UnavailableDate == selectedDay).Select(p => p.UnavailableDate).FirstOrDefault();
+        if (selectedDay == unavailableDate)
+        {
+            this.unavailableDate = true;
+            return;
+        }
+
         var workingHours = Enumerable.Range(8, 10);
 
         var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDay.Year, selectedDay.Month, selectedDay.Day, hour, 0, 0)).ToList();

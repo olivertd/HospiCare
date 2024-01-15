@@ -4,7 +4,8 @@
 @*sets the component as a route, nav is changes to this route => see NavMenu*@
 @page "/feedback"
 
-<h3>Past Feedback:</h3>
+<h3>Feedback</h3>
+<p>Welcome to the Feedback Page. Here you can view past feedback provided by patients.</p>
 @foreach (var feedback in feedbackService.GetAllFeedback())
 {
     var patientId = database.Appointments
@@ -14,9 +15,13 @@
 
     var patient = database.Users.FirstOrDefault(p => p.Id == patientId);
 
-    <p>@feedback.Body</p>
-    <p>Rating: @feedback.Rating/5</p>
-    <p>Review by: @patient.FirstName @patient.LastName</p>
+    <div class="feedback-item">
+        <span class="feedback-author">
+            <img src="/user.png" / class="userimg"> <p>@patient.FirstName @patient.LastName</p>
+        </span>
+        <p class="feedback-body">@feedback.Body</p>
+        <p class="feedback-rating">Rating: @feedback.Rating/5</p>
+    </div>
 }   
 
 @code {

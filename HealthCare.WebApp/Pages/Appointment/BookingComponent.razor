@@ -6,6 +6,7 @@
 @inject HealthCare.Core.Data.Context database
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager navManager
 @page "/book-appointment"
 
 <h1>Book an appoinment</h1>
@@ -200,6 +201,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.IsInRole("Patient"))
+        {
+            navManager.NavigateTo("/");
+        }
+
         await GetWorkers();
 
         selectedDay = InitializeSelectedDay();

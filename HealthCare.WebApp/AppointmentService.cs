@@ -27,13 +27,35 @@ namespace HealthCare.Core
                 .Where(a => a.WorkerId == workerId)
                 .Select(a => new AppointmentDetails
                 {
-                    Id = a.Id.ToString(),
+                    Id = a.Id,
                     PatientId = a.PatientId,
                     WorkerId = a.WorkerId,
                     AppointmentStart = a.AppointmentStart,
                     AppointmentEnd = a.AppointmentEnd, 
                     AppointmentType = a.typeOfService, 
-                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName 
+                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                    Details = a.PatientText
+                })
+                .ToListAsync();
+
+            return appointments;
+        }
+
+        public async Task<IEnumerable<AppointmentDetails>> GetAppointmentsForPatient(string workerId)
+        {
+            var appointments = await database.Appointments
+                .Include(a => a.Worker)
+                .Where(a => a.PatientId == workerId)
+                .Select(a => new AppointmentDetails
+                {
+                    Id = a.Id,
+                    PatientId = a.PatientId,
+                    WorkerId = a.WorkerId,
+                    AppointmentStart = a.AppointmentStart,
+                    AppointmentEnd = a.AppointmentEnd,
+                    AppointmentType = a.typeOfService,
+                    PatientName = a.Worker.FirstName + " " + a.Worker.LastName,
+                    Details = a.PatientText
                 })
                 .ToListAsync();
 
@@ -57,7 +79,7 @@ namespace HealthCare.Core
         // The AppointmentDetails class used to structure the data for the Razor page.
         public class AppointmentDetails
         {
-            public string Id { get; set; }
+            public int Id { get; set; }
             public string PatientId { get; set; }
             public string WorkerId { get; set; }
             public string Details { get; set; }

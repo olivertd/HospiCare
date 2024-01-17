@@ -3,5 +3,15 @@
 
 <PageTitle>Index</PageTitle>
 
-<DashboardComponent />
 
+<AuthorizeView Roles="Patient">
+    <Authorized>
+        <DashboardComponent />
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Doctor, Nurse">
+    <Authorized>
+       <HealthCare.WebApp.Pages.WorkersDashboard.WorkerDashboard/>
+    </Authorized>
+</AuthorizeView>

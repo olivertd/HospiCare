@@ -14,21 +14,31 @@
     @if (UserAppointments != null && UserAppointments.Any())
     {
         <h4>Your Appointments:</h4>
-        <ul>
+        <div class="row">
             @foreach (var appointment in UserAppointments)
             {
                 bool feedbackExists = database.Feedbacks.FirstOrDefault(f => f.AppointmentID == appointment.Id) != null;
-
-                <li>Start: @appointment.AppointmentStart.ToString("yyyy-M-dd HH:mm") - @appointment.AppointmentEnd.ToString("yyyy-M-dd HH:mm"): @appointment.PatientText
-                    <button @onclick="() => DeleteAppointment(appointment.Id)">Delete</button>
-
-                    @if (!feedbackExists && appointment.AppointmentEnd < DateTime.Now)
-                    {
-                        <FeedbackComponent appointmentId="@appointment.Id" />
-                    }
-                </li>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Appointment ID: @appointment.Id</h5>
+                            <p class="card-text">
+                                <strong>Doctor Name:</strong> @appointment.PatientName <br />
+                                <strong>Start Time:</strong> @appointment.AppointmentStart.ToString("g") <br />
+                                <strong>End Time:</strong> @appointment.AppointmentEnd.ToString("g") <br />
+                                <strong>Type:</strong> @appointment.AppointmentType <br />
+                                <strong>Your notes:</strong> @appointment.Details
+                            </p>
+                            <button @onclick="() => DeleteAppointment(appointment.Id)" class="btn-primary">Delete</button>
+                            @if (!feedbackExists && appointment.AppointmentEnd < DateTime.Now)
+                            {
+                                <FeedbackComponent appointmentId="@appointment.Id" />
+                            }
+                        </div>
+                    </div>
+                </div>
             }
-        </ul>
+        </div>
     }
     else
     {
@@ -39,7 +49,8 @@
 
 @code {
 
-    private List<Appointment> UserAppointments { get; set; } = new List<Appointment>();
+    private IEnumerable<AppointmentService.AppointmentDetails> UserAppointments;
+    private string userName = "";
     public AuthenticationStateProvider AuthenticationStateProviders { get; set; }
     public UserManager<ApplicationUser> UserManagers { get; set; }
     public AppointmentService AppointmentServices;
@@ -67,7 +78,7 @@
 
         if(currentUser != null)
         {
-            UserAppointments = database.Appointments.Where(t => t.PatientId == currentUser.Id).ToList();
+            UserAppointments = await appointmentService.GetAppointmentsForPatient(currentUser.Id);
         }
     }
 

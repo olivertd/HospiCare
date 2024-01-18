@@ -4,6 +4,7 @@ using HealthCare.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthCare.WebApp.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240117223632_initialcreate1")]
+    partial class initialcreate1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,28 +160,6 @@ namespace HealthCare.WebApp.Migrations
                     b.HasIndex("AppointmentID");
 
                     b.ToTable("Feedbacks");
-                });
-
-            modelBuilder.Entity("HealthCare.WebApp.Models.WorkerUnavailability", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("UnavailableDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("WorkerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("WorkerUnavailabilities");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -346,17 +327,6 @@ namespace HealthCare.WebApp.Migrations
                         .IsRequired();
 
                     b.Navigation("Appointment");
-                });
-
-            modelBuilder.Entity("HealthCare.WebApp.Models.WorkerUnavailability", b =>
-                {
-                    b.HasOne("HealthCare.Core.Models.Users.ApplicationUser", "Worker")
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

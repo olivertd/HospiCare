@@ -12,7 +12,7 @@ namespace HealthCare.Core.Data
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
 
-
+        public DbSet<WorkerUnavailability> WorkerUnavailabilities { get; set; }
         public Context(DbContextOptions<Context> options)
         : base(options)
         {

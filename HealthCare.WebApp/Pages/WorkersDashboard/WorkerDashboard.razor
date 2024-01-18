@@ -7,6 +7,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject HealthCare.Core.Data.Context database
 @inject IJSRuntime jsRuntime
+@using HealthCare.WebApp.Models
 
 <h3>Workers Dashboard</h3>
 
@@ -18,6 +19,29 @@
             <strong>Name:</strong> @workerName <br />
             <strong>Role:</strong> @workerRole
         </p>
+    </div>
+</div>
+
+<!-- Manage Availability Section -->
+<div class="card mb-4">
+    <div class="card-header">Manage Availability</div>
+    <div class="card-body">
+        <form @onsubmit="HandleAvailabilityChange">
+            <div class="date-wrap">
+                <label for="availabilityDate" class="label-text">Select Date</label>
+                <input type="date" @bind-value="availabilityDate" @bind-value:event="oninput" @onchange="CheckAvailability" min="@DateTime.Today.ToString("yyyy-MM-dd")" class="dateinput" />
+            </div>
+            <!-- Availability Indicator -->
+            <p>
+                <strong>Status:</strong>
+                <span class="@availabilityStatusClass">@availabilityStatus</span>
+            </p>
+            <button type="submit" class="btn-primary">Toggle Availability</button>
+        </form>
+        @if (availabilityChanged)
+        {
+            <p class="text-success">Availability updated successfully.</p>
+        }
     </div>
 </div>
 
@@ -55,11 +79,14 @@ else
     <p>No upcoming appointments.</p>
 }
 
-
 @code {
     private IEnumerable<AppointmentService.AppointmentDetails> workerAppointments;
     private string workerName = "";
     private string workerRole = "";
+    private DateTime availabilityDate;
+    private bool availabilityChanged = false;
+    private string availabilityStatus = "Not Checked";
+    private string availabilityStatusClass = "text-muted";
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,19 +98,68 @@ else
         {
             var applicationUser = await UserManager.FindByIdAsync(userId);
             workerName = $"{applicationUser.FirstName} {applicationUser.LastName}";
+            workerAppointments = await appointmentService.GetAppointmentsForWorker(userId);
         }
 
         workerRole = principalUser.IsInRole("Doctor") ? "Doctor" : "Nurse";
 
-        if (!string.IsNullOrEmpty(userId))
-        {
-            workerAppointments = await appointmentService.GetAppointmentsForWorker(userId);
-        }
+        availabilityDate = DateTime.Today;
+        await CheckAvailability();
     }
+
+    private async Task HandleAvailabilityChange()
+    {
+        var userId = await GetUserIdFromPrincipal();
+
+        var existingRecord = database.WorkerUnavailabilities
+            .FirstOrDefault(w => w.WorkerId == userId && w.UnavailableDate.Date == availabilityDate.Date);
+
+        if (existingRecord != null)
+        {
+            database.WorkerUnavailabilities.Remove(existingRecord);
+        }
+        else
+        {
+            database.WorkerUnavailabilities.Add(new WorkerUnavailability
+                {
+                    WorkerId = userId,
+                    UnavailableDate = availabilityDate
+                });
+        }
+
+        await database.SaveChangesAsync();
+        availabilityChanged = true;
+        await CheckAvailability();
+    }
+
+    private async Task CheckAvailability()
+    {
+        var userId = await GetUserIdFromPrincipal();
+        var isUnavailable = database.WorkerUnavailabilities.Any(w => w.WorkerId == userId && w.UnavailableDate.Date == availabilityDate.Date);
+
+        if (isUnavailable)
+        {
+            availabilityStatus = "Unavailable";
+            availabilityStatusClass = "text-danger";
+        }
+        else
+        {
+            availabilityStatus = "Available";
+            availabilityStatusClass = "text-success";
+        }
+
+        StateHasChanged(); // Update the UI
+    }
+
+    private async Task<string> GetUserIdFromPrincipal()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        return authState.User.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+    }
+
     private async void DeleteAppointment(int id)
     {
-        // Log a message to the browser console
-        var appointmentToDelete = database.Appointments.Where(a => a.Id == id).FirstOrDefault();
+        var appointmentToDelete = database.Appointments.FirstOrDefault(a => a.Id == id);
 
         bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this appointment?");
         if (confirmed)

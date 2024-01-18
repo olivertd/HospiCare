@@ -1,4 +1,4 @@
-﻿@using HealthCare.Core.Data;
+﻿﻿@using HealthCare.Core.Data;
 @using HealthCare.Core.Models;
 @using HealthCare.Core.Models.Users;
 @using Microsoft.AspNetCore.Identity;
@@ -6,7 +6,6 @@
 @inject HealthCare.Core.Data.Context database
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject NavigationManager navManager
 @page "/book-appointment"
 
 <h1>Book an appoinment</h1>
@@ -32,7 +31,7 @@
         </div>
     </form>
 
-    @if (availableTimes != null && availableTimes.Count() > 0)
+    @if (availableTimes != null && availableTimes.Count() > 0 && !unavailableDate)
     {
         <h3>Available Appointments:</h3>
         <form @onsubmit="@(e => BookAppointment(selectedTime, selectedStaff))">
@@ -48,26 +47,32 @@
                 }
             </ul>
 
-            
-            <div class="confirmation-booking">
-            <textarea @bind="patientText" placeholder="Describe your reason for your appointment..." />
-            <div>
-            <div class="select-wrap" style="width: 100%">
-                <label for="selectedService" class="label-text">Appointment type</label>
-                <select id="selectedService" @bind="selectedService" class="custom-select">
-                    <option value="General Checkup">General Checkup</option>
-                    <option value="Vaccination">Vaccination</option>
-                </select>
-            </div>
 
-            <button type="submit" class="btn-primary" style="height: 3em">Book Selected Time</button>
-            </div>
+            <div class="confirmation-booking">
+                <textarea @bind="patientText" placeholder="Describe your reason for your appointment..." />
+                <div>
+                    <div class="select-wrap" style="width: 100%">
+                        <label for="selectedService" class="label-text">Appointment type</label>
+                        <select id="selectedService" @bind="selectedService" class="custom-select">
+                            <option value="General Checkup">General Checkup</option>
+                            <option value="Vaccination">Vaccination</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="height: 3em">Book Selected Time</button>
+                </div>
             </div>
         </form>
     }
-    if (availableTimes != null && availableTimes.Count() < 1)
+    else if (availableTimes != null && availableTimes.Count() < 1)
     {
-        <h3>Please select a weekday for available appointments.</h3>
+        <h3>No available appointments found.</h3>
+
+    }
+    else if (unavailableDate)
+    {
+        <h3>No available appointments found.</h3>
+
     }
 
     if (!string.IsNullOrEmpty(error))
@@ -95,6 +100,7 @@
     private string selectedTime;
     private string patientText = "";
     private bool bookingMade = false;
+    private bool unavailableDate;
     private string error;
     public List<DateTime> availableTimes;
     public List<ApplicationUser> workers = new List<ApplicationUser>();
@@ -147,25 +153,37 @@
 
     private void GenerateAvailableTimeSlots()
     {
+        var userId = selectedStaff; 
+        var selectedDate = selectedDay.Date; 
+
+        Console.WriteLine($"Selected Date: {selectedDate}");
+
+        this.unavailableDate = database.WorkerUnavailabilities
+            .Any(w => w.WorkerId == userId && w.UnavailableDate.Date == selectedDate);
+
+        Console.WriteLine($"Is Unavailable: {this.unavailableDate}");
+
+        if (this.unavailableDate)
+        {
+
+            return;
+        }
+
         var workingHours = Enumerable.Range(8, 10);
-
-        var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDay.Year, selectedDay.Month, selectedDay.Day, hour, 0, 0)).ToList();
-
-        var availableTimeSlots = allTimeSlots;
-
+        var allTimeSlots = workingHours.Select(hour => new DateTime(selectedDate.Year, selectedDate.Month, selectedDate.Day, hour, 0, 0)).ToList();
 
         var bookedTimeSlots = database.Appointments
-        .Where(appointment => appointment.WorkerId == selectedStaff)
-        .Select(appointment => appointment.AppointmentStart)
-        .ToList();
+            .Where(appointment => appointment.WorkerId == userId && appointment.AppointmentStart.Date == selectedDate)
+            .Select(appointment => appointment.AppointmentStart)
+            .ToList();
 
-        availableTimeSlots = allTimeSlots
-        .Except(bookedTimeSlots)
-        .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 17 && IsWeekday(timeSlot.DayOfWeek))
-        .ToList();
-
-        availableTimes = availableTimeSlots;
+        availableTimes = allTimeSlots
+            .Except(bookedTimeSlots)
+            .Where(timeSlot => timeSlot.Hour >= 8 && timeSlot.Hour < 17 && IsWeekday(timeSlot.DayOfWeek))
+            .ToList();
     }
+
+
 
     private bool IsWeekday(DayOfWeek dayOfWeek)
     {
@@ -201,14 +219,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (!user.IsInRole("Patient"))
-        {
-            navManager.NavigateTo("/");
-        }
-
         await GetWorkers();
 
         selectedDay = InitializeSelectedDay();
